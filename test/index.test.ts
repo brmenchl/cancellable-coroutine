@@ -1,4 +1,4 @@
-import * as Cancellable from '../src';
+import Cancellable from '../src';
 
 describe('Cancellable', () => {
   it('should run', async () => {

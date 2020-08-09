@@ -1,7 +1,7 @@
 const CANCEL = Symbol('CANCEL');
 const IS_CANCELLED = Symbol('IS_CANCELLED');
 
-class CancelError extends Error {
+export class CancelError extends Error {
   constructor(message?: string) {
     super(message); // 'Error' breaks prototype chain here
     Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
@@ -9,7 +9,7 @@ class CancelError extends Error {
   }
 }
 
-type CancellableTask<Args extends ReadonlyArray<unknown>> = {
+export type CancellableTask<Args extends ReadonlyArray<unknown>> = {
   (...args: Args): Promise<any>;
   [CANCEL](): void;
   [IS_CANCELLED](): boolean;
@@ -49,6 +49,16 @@ export const isCancelled = (task: CancellableTask<any>) => task[IS_CANCELLED]();
 
 export const isCancelError = (error: Error): error is CancelError =>
   error instanceof CancelError;
+
+const Cancellable = {
+  CancelError,
+  create,
+  cancel,
+  isCancelled,
+  isCancelError,
+};
+
+export default Cancellable;
 
 const runner = <F extends (...args: any[]) => Generator>(
   gen: F,
