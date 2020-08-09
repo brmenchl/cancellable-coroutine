@@ -29,9 +29,9 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "cancellable",
+  "name": "cancellable-coroutine",
   "author": "Brad Menchl",
-  "module": "dist/cancellable.esm.js",
+  "module": "dist/cancellable-coroutine.esm.js",
   "devDependencies": {
     "husky": "^4.2.5",
     "tsdx": "^0.13.2",
