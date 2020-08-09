@@ -51,21 +51,21 @@ Returns a `CancellableTask`.
 When calling this `CancellableTask`, `generatorFn` will run like an `async/await` function (all `yield` expressions will resolve in sequence).
 
 ```typescript
-const task = Cancellable.create(function*() {
-  const result1 = yield doAThing();
+const task = Cancellable.create(function*(arg: string) {
+  const result1 = yield doAThing(arg);
   const result2 = yield doAnAsyncThing(result1);
   return yield doAThirdThing(result2);
 };
 
 /*
   this task will run like:
-  async function() {
-    const result1 = await doAThing();
+  async function(arg: string) {
+    const result1 = await doAThing(arg);
     const result2 = await doAnAsyncThing(result1);
     return await doAThirdThing(result2);
   }
 */
-task();
+task('hello');
 ```
 
 ### `cancel(cancellableTask)`
@@ -139,4 +139,3 @@ if (Cancellable.isCancelled(task)) {
 ## Not Implemented
 
 - Returned Promise rejects on uncaught Error or CancelError
-- Pass argument to generator function

@@ -4,15 +4,15 @@ describe('Cancellable', () => {
   it('should run', async () => {
     const afterPromise = jest.fn();
 
-    const gen = function*() {
-      const sum = yield 1 + 1;
+    const gen = function*(arg: number) {
+      const sum = yield 1 + arg;
       yield new Promise(res => setTimeout(res, 50));
       yield afterPromise(sum);
       expect(afterPromise).toBeCalledWith(2);
       return sum;
     };
 
-    const returnValue = await Cancellable.create(gen)();
+    const returnValue = await Cancellable.create(gen)(1);
     expect(returnValue).toEqual(2);
   });
 
