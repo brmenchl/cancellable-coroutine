@@ -22,18 +22,24 @@ export const create = <F extends (...args: any[]) => Generator>(fn: F) => {
       isCancelled: false,
     };
     const { it, result } = runner(fn, ...args);
+    let onCancel: (e: any) => void;
+    const cancelled = new Promise((_, rej) => (onCancel = rej));
 
     cancellableTask[CANCEL] = (message?: string) => {
       if (state.isRunning) {
-        const err = new CancelError(message);
-        state.isCancelled = true;
-        it.throw(err);
+        try {
+          const err = new CancelError(message);
+          state.isCancelled = true;
+          it.throw(err);
+        } catch (e) {
+          onCancel(e);
+        }
       }
     };
 
     cancellableTask[IS_CANCELLED] = () => state.isCancelled;
 
-    const completion = await result;
+    const completion = await Promise.race([result, cancelled]);
     state.isRunning = false;
     return completion;
   }) as unknown) as CancellableTask<Parameters<F>>;
@@ -72,11 +78,11 @@ const runner = <F extends (...args: any[]) => Generator>(
   const it = gen(...args);
 
   const step = async (verb: 'next' | 'throw', arg?: any): Promise<any> => {
+    const result = it[verb](arg);
+    if (result.done) {
+      return await result.value;
+    }
     try {
-      const result = it[verb](arg);
-      if (result.done) {
-        return await result.value;
-      }
       const value = await result.value;
       if (value instanceof Error) {
         throw value;

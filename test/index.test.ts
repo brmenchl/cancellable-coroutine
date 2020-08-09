@@ -40,6 +40,22 @@ describe('Cancellable', () => {
     expect(afterError).not.toHaveBeenCalled();
   });
 
+  it('should reject returned promise on unhandled yield Error in generator', done => {
+    const error = new Error('Whoops');
+    const gen = function*() {
+      yield error;
+    };
+
+    const onResolved = jest.fn();
+
+    const cancellableTask = Cancellable.create(gen);
+    cancellableTask().then(onResolved, e => {
+      expect(e).toBe(error);
+      done();
+    });
+    expect(onResolved).not.toBeCalled();
+  });
+
   it('should cancel on yield rejected Promise', async () => {
     const afterRejectedPromise = jest.fn();
     const inCatch = jest.fn();
@@ -64,6 +80,22 @@ describe('Cancellable', () => {
     expect(afterRejectedPromise).not.toHaveBeenCalled();
   });
 
+  it('should reject returned promise on unhandled yield rejected Promise in generator', done => {
+    const rejectedPromise = Promise.reject('Whoops');
+    const gen = function*() {
+      yield rejectedPromise;
+    };
+
+    const onResolved = jest.fn();
+
+    const cancellableTask = Cancellable.create(gen);
+    cancellableTask().then(onResolved, e => {
+      expect(e).toEqual('Whoops');
+      done();
+    });
+    expect(onResolved).not.toBeCalled();
+  });
+
   it('should cancel on task cancel call', async () => {
     const afterDelay = jest.fn();
     const inCatch = jest.fn();
@@ -85,6 +117,22 @@ describe('Cancellable', () => {
     expect(Cancellable.isCancelled(cancellableTask)).toEqual(true);
     expect(inCatch).toHaveBeenCalledWith('Took too long');
     expect(afterDelay).not.toHaveBeenCalled();
+  });
+
+  it('should reject returned promise on unhandled CancelError in generator', done => {
+    const onResolved = jest.fn();
+
+    const cancellableTask = Cancellable.create(function*() {
+      yield new Promise(res => setTimeout(res, 100));
+    });
+
+    cancellableTask().then(onResolved, e => {
+      expect(Cancellable.isCancelError(e)).toBe(true);
+      expect(e).toEqual(new Cancellable.CancelError('Took too long'));
+      done();
+    });
+    Cancellable.cancel(cancellableTask, 'Took too long');
+    expect(onResolved).not.toBeCalled();
   });
 
   it('should cancel multiple tasks', async () => {

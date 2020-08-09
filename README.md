@@ -14,7 +14,6 @@ Cancellable-coroutine is a wrapper for function generators that runs them as asy
     - [`CancelError`](#cancelerror)
     - [`isCancelError(error)`](#iscancelerrorerror)
     - [`isCancelled(cancellableTask)`](#iscancelledcancellabletask)
-  - [Not Implemented](#not-implemented)
 
 ## Usage
 
@@ -135,7 +134,3 @@ if (Cancellable.isCancelled(task)) {
   // task was cancelled!
 }
 ```
-
-## Not Implemented
-
-- Returned Promise rejects on uncaught Error or CancelError
