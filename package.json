@@ -31,6 +31,11 @@
   },
   "name": "cancellable-coroutine",
   "author": "Brad Menchl",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brmenchl/cancellable-coroutine.git"
+  },
+  "description": "Cancellable-coroutine is a wrapper for function generators that runs them as async functions and adds cancellation support.",
   "module": "dist/cancellable-coroutine.esm.js",
   "devDependencies": {
     "husky": "^4.2.5",
