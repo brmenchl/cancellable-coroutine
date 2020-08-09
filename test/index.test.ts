@@ -68,7 +68,7 @@ describe('Cancellable', () => {
     const afterDelay = jest.fn();
     const inCatch = jest.fn();
 
-    const gen = function*() {
+    const cancellableTask = Cancellable.create(function*() {
       try {
         yield new Promise(res => setTimeout(res, 100));
         yield afterDelay();
@@ -77,9 +77,8 @@ describe('Cancellable', () => {
         expect(Cancellable.isCancelError(e)).toEqual(true);
         return e;
       }
-    };
+    });
 
-    const cancellableTask = Cancellable.create(gen);
     const promise = cancellableTask();
     Cancellable.cancel(cancellableTask);
     await promise;

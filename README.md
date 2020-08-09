@@ -1,27 +1,141 @@
-# TSDX Bootstrap
+# Cancellable-Coroutine
 
-This project was bootstrapped with [TSDX](https://github.com/jaredpalmer/tsdx).
+Cancellable-coroutine is a wrapper for function generators that runs them as async functions and adds cancellation support.
 
-## Local Development
+- [Cancellable-Coroutine](#cancellable-coroutine)
+  - [Usage](#usage)
+  - [API](#api)
+    - [`create(generatorFn)`](#creategeneratorfn)
+    - [`cancel(cancellableTask)`](#cancelcancellabletask)
+    - [`CancelError`](#cancelerror)
+    - [`isCancelError(error)`](#iscancelerrorerror)
+    - [`isCancelled(cancellableTask)`](#iscancelledcancellabletask)
+  - [Not Implemented](#not-implemented)
 
-Below is a list of commands you will probably find useful.
+## Usage
 
-### `npm start` or `yarn start`
+```typescript
+// Take a generator function
+const myFn = function*(url) {
+    // Maybe you want some API data
+    const response = yield fetchSomething(url);
+    // Maybe you want to delay for some ms
+    yield delay(500);
+    console.log(response);
+    return response;
+};
 
-Runs the project in development/watch mode. Your project will be rebuilt upon changes. TSDX has a special logger for you convenience. Error messages are pretty printed and formatted for compatibility VS Code's Problems tab.
+// Wrap the generator in Cancellable.create(...)
+const cancellableFn = Cancellable.create(myFn);
 
-<img src="https://user-images.githubusercontent.com/4060187/52168303-574d3a00-26f6-11e9-9f3b-71dbec9ebfcb.gif" width="600" />
+// Run the wrapped function, which runs like a function using `async/await`.
+// The function returns a promise, which resolves on complete, or rejects on uncaught exception or cancellation.
+cancellableFn("https://my-api.com")
+  .then(onComplete, onFailureOrCancel);
 
-Your library will be rebuilt if you make edits.
+// Now we can halt the execution of our generator function whenever we want! We use Cancellable.cancel(..) to cancel.
+setTimeout(() => {
+  Cancellable.cancel(cancellableFn)
+}, 200);
+```
 
-### `npm run build` or `yarn build`
+## API
 
-Bundles the package to the `dist` folder.
-The package is optimized and bundled with Rollup into multiple formats (CommonJS, UMD, and ES Module).
+### `create(generatorFn)`
 
-<img src="https://user-images.githubusercontent.com/4060187/52168322-a98e5b00-26f6-11e9-8cf6-222d716b75ef.gif" width="600" />
+Returns a `CancellableTask`.
 
-### `npm test` or `yarn test`
+When calling this `CancellableTask`, `generatorFn` will run like an `async/await` function (all `yield` expressions will resolve in sequence).
 
-Runs the test watcher (Jest) in an interactive mode.
-By default, runs tests related to files changed since the last commit.
+```typescript
+const task = Cancellable.create(function*() {
+  const result1 = yield doAThing();
+  const result2 = yield doAnAsyncThing(result1);
+  return yield doAThirdThing(result2);
+};
+
+/*
+  this task will run like:
+  async function() {
+    const result1 = await doAThing();
+    const result2 = await doAnAsyncThing(result1);
+    return await doAThirdThing(result2);
+  }
+*/
+task();
+```
+
+
+### `cancel(cancellableTask)`
+
+Cancels `cancellableTask`.
+
+If `cancellableTask` is running, a `CancelError` will be thrown in the wrapped generator function. If the task is not running, nothing will happen.
+
+```typescript
+const task = Cancellable.create(function*() {
+  try {
+    yield doAThingThatTakes5Seconds();
+    // We want to cancel before this line.
+    console.log("We did it!");
+  } catch (error) {
+    if (Cancellable.isCancelError(error)) {
+      console.log("We cancelled!");
+    } else {
+      console.log("We failed!");
+    }
+  }
+};
+
+task();
+
+setTimeout(() => {
+  Cancellable.cancel(task);
+}, 1000);
+
+// Only "We cancelled!" will output to the console.
+```
+
+### `CancelError`
+
+Extends Error. A CancelError will be thrown into the generator function if it is cancelled while running.
+
+### `isCancelError(error)`
+
+Returns true if the passed error is a CancelError, false otherwise. This can be used in a `catch(error)` block to check whether `error` was caused by cancellation or not.
+
+```typescript
+try {
+...
+} catch (error) {
+  if (isCancelError(error)) {
+    // We cancelled!
+  } else {
+    // Something else failed!
+  }
+}
+```
+
+### `isCancelled(cancellableTask)`
+
+Returns true if the passed task has been cancelled. This can be used in a calling function to check whether a called task ran successfully or was cancelled.
+
+```typescript
+const task = Cancellable.create(function*() {
+  ...
+});
+
+task();
+
+Cancellable.cancel(task);
+
+if (Cancellable.isCancelled(task)) {
+  // task was cancelled!
+}
+```
+
+## Not Implemented
+
+- CancelError messages
+- Returned Promise rejects on uncaught Error or CancelError
+- Pass argument to generator function
