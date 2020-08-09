@@ -1,5 +1,10 @@
 # Cancellable-Coroutine
 
+
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/brmenchl/cancellable-coroutine/CI)
+![npm (tag)](https://img.shields.io/npm/v/cancellable-coroutine/latest)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/cancellable-coroutine)
+
 Cancellable-coroutine is a wrapper for function generators that runs them as async functions and adds cancellation support.
 
 - [Cancellable-Coroutine](#cancellable-coroutine)
