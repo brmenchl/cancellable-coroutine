@@ -1,11 +1,11 @@
-const CANCEL = Symbol("CANCEL");
-const IS_CANCELLED = Symbol("IS_CANCELLED");
+const CANCEL = Symbol('CANCEL');
+const IS_CANCELLED = Symbol('IS_CANCELLED');
 
 class CancelError extends Error {
   constructor(message?: string) {
     super(message); // 'Error' breaks prototype chain here
     Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
-    this.name = "CancelError";
+    this.name = 'CancelError';
   }
 }
 
@@ -19,7 +19,7 @@ export const create = <F extends (...args: any[]) => Generator>(fn: F) => {
   const cancellableTask = ((async (...args: Parameters<F>) => {
     const state = {
       isRunning: true,
-      isCancelled: false
+      isCancelled: false,
     };
     const { it, result } = runner(fn, ...args);
 
@@ -56,7 +56,7 @@ const runner = <F extends (...args: any[]) => Generator>(
 ) => {
   const it = gen(...args);
 
-  const step = async (verb: "next" | "throw", arg?: any): Promise<any> => {
+  const step = async (verb: 'next' | 'throw', arg?: any): Promise<any> => {
     try {
       const result = it[verb](arg);
       if (result.done) {
@@ -66,12 +66,12 @@ const runner = <F extends (...args: any[]) => Generator>(
       if (value instanceof Error) {
         throw value;
       } else {
-        return step("next", value);
+        return step('next', value);
       }
     } catch (err) {
-      return step("throw", err);
+      return step('throw', err);
     }
   };
 
-  return { it, result: step("next") };
+  return { it, result: step('next') };
 };
