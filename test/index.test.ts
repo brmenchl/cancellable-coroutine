@@ -73,17 +73,47 @@ describe('Cancellable', () => {
         yield new Promise(res => setTimeout(res, 100));
         yield afterDelay();
       } catch (e) {
-        inCatch();
+        inCatch(e.message);
         expect(Cancellable.isCancelError(e)).toEqual(true);
         return e;
       }
     });
 
     const promise = cancellableTask();
-    Cancellable.cancel(cancellableTask);
+    Cancellable.cancel(cancellableTask, 'Took too long');
     await promise;
     expect(Cancellable.isCancelled(cancellableTask)).toEqual(true);
-    expect(inCatch).toHaveBeenCalled();
+    expect(inCatch).toHaveBeenCalledWith('Took too long');
+    expect(afterDelay).not.toHaveBeenCalled();
+  });
+
+  it('should cancel multiple tasks', async () => {
+    const afterDelay = jest.fn();
+    const inCatch = jest.fn();
+
+    const fn = function*() {
+      try {
+        yield new Promise(res => setTimeout(res, 100));
+        yield afterDelay();
+      } catch (e) {
+        inCatch(e.message);
+        expect(Cancellable.isCancelError(e)).toEqual(true);
+        return e;
+      }
+    };
+
+    const cancellableTask1 = Cancellable.create(fn);
+    const cancellableTask2 = Cancellable.create(fn);
+
+    const promise1 = cancellableTask1();
+    const promise2 = cancellableTask2();
+    Cancellable.cancel([cancellableTask1, cancellableTask2], 'CANCELLING');
+    await promise1;
+    await promise2;
+    expect(Cancellable.isCancelled(cancellableTask1)).toEqual(true);
+    expect(Cancellable.isCancelled(cancellableTask2)).toEqual(true);
+    expect(inCatch).toHaveBeenCalledTimes(2);
+    expect(inCatch).toHaveBeenCalledWith('CANCELLING');
     expect(afterDelay).not.toHaveBeenCalled();
   });
 });

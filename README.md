@@ -1,6 +1,5 @@
 # Cancellable-Coroutine
 
-
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/brmenchl/cancellable-coroutine/CI)
 ![npm (tag)](https://img.shields.io/npm/v/cancellable-coroutine/latest)
 ![npm bundle size](https://img.shields.io/bundlephobia/minzip/cancellable-coroutine)
@@ -22,12 +21,12 @@ Cancellable-coroutine is a wrapper for function generators that runs them as asy
 ```typescript
 // Take a generator function
 const myFn = function*(url) {
-    // Maybe you want some API data
-    const response = yield fetchSomething(url);
-    // Maybe you want to delay for some ms
-    yield delay(500);
-    console.log(response);
-    return response;
+  // Maybe you want some API data
+  const response = yield fetchSomething(url);
+  // Maybe you want to delay for some ms
+  yield delay(500);
+  console.log(response);
+  return response;
 };
 
 // Wrap the generator in Cancellable.create(...)
@@ -35,12 +34,11 @@ const cancellableFn = Cancellable.create(myFn);
 
 // Run the wrapped function, which runs like a function using `async/await`.
 // The function returns a promise, which resolves on complete, or rejects on uncaught exception or cancellation.
-cancellableFn("https://my-api.com")
-  .then(onComplete, onFailureOrCancel);
+cancellableFn('https://my-api.com').then(onComplete, onFailureOrCancel);
 
 // Now we can halt the execution of our generator function whenever we want! We use Cancellable.cancel(..) to cancel.
 setTimeout(() => {
-  Cancellable.cancel(cancellableFn)
+  Cancellable.cancel(cancellableFn);
 }, 200);
 ```
 
@@ -69,7 +67,6 @@ const task = Cancellable.create(function*() {
 */
 task();
 ```
-
 
 ### `cancel(cancellableTask)`
 
@@ -141,6 +138,5 @@ if (Cancellable.isCancelled(task)) {
 
 ## Not Implemented
 
-- CancelError messages
 - Returned Promise rejects on uncaught Error or CancelError
 - Pass argument to generator function

@@ -11,7 +11,7 @@ export class CancelError extends Error {
 
 export type CancellableTask<Args extends ReadonlyArray<unknown>> = {
   (...args: Args): Promise<any>;
-  [CANCEL](): void;
+  [CANCEL](message?: string): void;
   [IS_CANCELLED](): boolean;
 };
 
@@ -23,9 +23,9 @@ export const create = <F extends (...args: any[]) => Generator>(fn: F) => {
     };
     const { it, result } = runner(fn, ...args);
 
-    cancellableTask[CANCEL] = () => {
+    cancellableTask[CANCEL] = (message?: string) => {
       if (state.isRunning) {
-        const err = new CancelError();
+        const err = new CancelError(message);
         state.isCancelled = true;
         it.throw(err);
       }
@@ -41,8 +41,13 @@ export const create = <F extends (...args: any[]) => Generator>(fn: F) => {
   return cancellableTask;
 };
 
-export const cancel = (...tasks: CancellableTask<any>[]) => {
-  tasks.forEach(task => task[CANCEL]());
+export const cancel = (
+  tasks: CancellableTask<any> | CancellableTask<any>[],
+  message?: string
+) => {
+  (Array.isArray(tasks) ? tasks : [tasks]).forEach(task =>
+    task[CANCEL](message)
+  );
 };
 
 export const isCancelled = (task: CancellableTask<any>) => task[IS_CANCELLED]();
