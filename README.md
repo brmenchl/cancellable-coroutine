@@ -1,8 +1,8 @@
 # Cancellable-Coroutine
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/brmenchl/cancellable-coroutine/CI?link=https://github.com/brmenchl/cancellable-coroutine/actions)
-![npm (tag)](https://img.shields.io/npm/v/cancellable-coroutine/latest?link=https://www.npmjs.com/package/cancellable-coroutine)
-![npm bundle size](https://img.shields.io/bundlephobia/minzip/cancellable-coroutine?link=https://www.npmjs.com/package/cancellable-coroutine)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/brmenchl/cancellable-coroutine/CI?link=https://github.com/brmenchl/cancellable-coroutine/actions)](https://github.com/brmenchl/cancellable-coroutine/actions)
+[![npm (tag)](https://img.shields.io/npm/v/cancellable-coroutine/latest?link=https://www.npmjs.com/package/cancellable-coroutine)](https://www.npmjs.com/package/cancellable-coroutine)
+[![npm bundle size](https://img.shields.io/bundlephobia/minzip/cancellable-coroutine?link=https://www.npmjs.com/package/cancellable-coroutine)](https://www.npmjs.com/package/cancellable-coroutine)
 
 Cancellable-coroutine is a wrapper for function generators that runs them as async functions and adds cancellation support.
 
